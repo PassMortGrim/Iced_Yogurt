@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/iced_yogurt_app",
+    "crates/iced_yogurt_audio",
+    "crates/iced_yogurt_core",
+    "crates/iced_yogurt_llm",
+    "crates/iced_yogurt_stt",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
