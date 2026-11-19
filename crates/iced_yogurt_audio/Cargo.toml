@@ -4,7 +4,11 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+default = ["real-audio"]
+real-audio = ["dep:cpal"]
+
 [dependencies]
 anyhow = "1"
-cpal = { version = "0.18", default-features = false }
+cpal = { version = "0.18", optional = true }
 hound = "3.5"
