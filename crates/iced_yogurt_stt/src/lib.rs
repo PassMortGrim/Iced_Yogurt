@@ -5,9 +5,6 @@ use anyhow::Context;
 
 
 
-#[cfg(feature = "whisper")]
-use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
-
 /// Un fragment transcrit, en millisecondes relatives au début du flux.
 #[derive(Debug, Clone)]
 pub struct SttSegment {
