@@ -6,5 +6,5 @@ license.workspace = true
 
 [dependencies]
 anyhow = "1"
-cpal = { version = "0.18", default-features = false }
+cpal = { version = "0.18", default-features = false, features = ["jack"] }
 hound = "3.5"
