@@ -1,0 +1,11 @@
+# Ignorer les fichiers inutiles pour le build Docker
+.git
+.gitignore
+.gitmodules
+.github
+.target
+target
+Cargo.lock
+*.md
+*.txt
+LICENSE

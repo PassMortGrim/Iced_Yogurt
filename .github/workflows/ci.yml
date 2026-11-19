@@ -15,16 +15,31 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Dépendances système (Linux)
+      
+      - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang libasound2-dev libudev-dev pkg-config
-      - name: Dépendances système (macOS)
+          sudo apt-get install -y cmake clang libclang-dev pkg-config g++
+          echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+      
+      - name: Install macOS dependencies
         if: runner.os == 'macOS'
-        run: brew install cmake
+        run: |
+          brew install cmake llvm
+          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> $GITHUB_ENV
+      
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        run: |
+          choco install cmake --yes
+          choco install llvm --yes
+          echo "LIBCLANG_PATH=C:\Program Files\LLVM\lib" >> $GITHUB_ENV
+      
+      - uses: dtolnay/rust-toolchain@stable
+      
       - name: Build
-        run: cargo build --workspace
+        run: cargo build --workspace --no-default-features
+      
       - name: Tests
-        run: cargo test --workspace
+        run: cargo test --workspace --no-default-features

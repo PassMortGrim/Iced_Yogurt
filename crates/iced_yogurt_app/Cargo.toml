@@ -8,11 +8,14 @@ license.workspace = true
 name = "iced-yogurt"
 path = "src/main.rs"
 
+[features]
+whisper = ["iced_yogurt_stt/whisper"]
+
 [dependencies]
 anyhow = "1"
 iced = { version = "0.13", features = ["tokio"] }
-iced_yogurt_audio = { path = "../iced_yogurt_audio" }
+iced_yogurt_audio = { path = "../iced_yogurt_audio", default-features = false }
 iced_yogurt_core = { path = "../iced_yogurt_core" }
 iced_yogurt_llm = { path = "../iced_yogurt_llm" }
-iced_yogurt_stt = { path = "../iced_yogurt_stt" }
+iced_yogurt_stt = { path = "../iced_yogurt_stt", default-features = false }
 tokio = { version = "1", features = ["time"] }
