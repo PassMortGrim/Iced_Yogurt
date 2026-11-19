@@ -39,12 +39,12 @@ jobs:
           cargo build -p iced_yogurt_core
           cargo build -p iced_yogurt_audio
           cargo build -p iced_yogurt_llm
-          cargo build -p iced_yogurt_stt --no-default-features
+          cargo build -p iced_yogurt_stt --no-default-features --features ci
           cargo build -p iced_yogurt_app --no-default-features
       - name: Tests
         run: |
           cargo test -p iced_yogurt_core
           cargo test -p iced_yogurt_audio
           cargo test -p iced_yogurt_llm
-          cargo test -p iced_yogurt_stt --no-default-features
+          cargo test -p iced_yogurt_stt --no-default-features --features ci
           cargo test -p iced_yogurt_app --no-default-features

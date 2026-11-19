@@ -7,6 +7,7 @@ license.workspace = true
 [features]
 default = ["whisper"]
 whisper = ["dep:whisper-rs"]
+ci = []
 
 [dependencies]
 anyhow = "1"
