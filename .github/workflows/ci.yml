@@ -20,10 +20,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang libasound2-dev libudev-dev pkg-config
+          sudo apt-get install -y cmake clang libclang-dev libasound2-dev libudev-dev pkg-config llvm
       - name: Dépendances système (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake pkg-config
+        run: brew install cmake pkg-config llvm
       - name: Dépendances système (Windows)
         if: runner.os == 'Windows'
         run: |
