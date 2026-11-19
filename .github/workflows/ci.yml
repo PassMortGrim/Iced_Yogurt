@@ -32,6 +32,6 @@ jobs:
           choco install cmake --yes
           choco install llvm --yes
       - name: Build
-        run: cargo build --workspace
+        run: cargo build --workspace --no-default-features
       - name: Tests
-        run: cargo test --workspace
+        run: cargo test --workspace --no-default-features
