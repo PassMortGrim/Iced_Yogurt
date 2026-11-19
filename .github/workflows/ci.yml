@@ -23,7 +23,12 @@ jobs:
           sudo apt-get install -y cmake clang libasound2-dev libudev-dev pkg-config
       - name: Dépendances système (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake
+        run: brew install cmake pkg-config
+      - name: Dépendances système (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install cmake --yes
+          choco install llvm --yes
       - name: Build
         run: cargo build --workspace
       - name: Tests
