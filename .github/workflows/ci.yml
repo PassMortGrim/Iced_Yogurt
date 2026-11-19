@@ -21,16 +21,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake clang libclang-dev libclang1 libasound2-dev libudev-dev pkg-config llvm g++
+          echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Dépendances système (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install cmake pkg-config llvm
           brew install --cask xcode
+          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> $GITHUB_ENV
       - name: Dépendances système (Windows)
         if: runner.os == 'Windows'
         run: |
           choco install cmake --yes
           choco install llvm --yes
+          echo "LIBCLANG_PATH=C:\\Program Files\\LLVM\\lib" >> $GITHUB_ENV
       - name: Build
         run: |
           cargo build -p iced_yogurt_core
