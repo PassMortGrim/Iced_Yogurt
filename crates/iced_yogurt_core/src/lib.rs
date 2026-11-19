@@ -245,6 +245,16 @@ pub struct Settings {
     pub transcription_language: String,
     /// Conserver le WAV de chaque réunion.
     pub save_audio: bool,
+    /// Utiliser Kyutai STT au lieu de Whisper.
+    pub use_kyutai_stt: bool,
+    /// URL du serveur moshi-server pour Kyutai STT (ex. ws://127.0.0.1:8998).
+    pub kyutai_stt_server_url: String,
+    /// Modèle Kyutai STT à utiliser (ex. kyutai/stt-1b-en_fr).
+    pub kyutai_stt_model: String,
+    /// Taille de la fenêtre en secondes pour la transcription Kyutai STT.
+    pub kyutai_window_seconds: u64,
+    /// Chevauchement en secondes entre les fenêtres pour Kyutai STT.
+    pub kyutai_overlap_seconds: u64,
 }
 
 impl Default for Settings {
@@ -256,6 +266,11 @@ impl Default for Settings {
             whisper_model_path: "models/ggml-base.bin".into(),
             transcription_language: "auto".into(),
             save_audio: true,
+            use_kyutai_stt: false,
+            kyutai_stt_server_url: "ws://127.0.0.1:8998".into(),
+            kyutai_stt_model: "kyutai/stt-1b-en_fr".into(),
+            kyutai_window_seconds: 8,
+            kyutai_overlap_seconds: 2,
         }
     }
 }

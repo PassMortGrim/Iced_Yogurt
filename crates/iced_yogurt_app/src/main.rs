@@ -151,6 +151,15 @@ fn start_recording(state: &mut State) -> Task<Message> {
     let audio_dir = data_dir().join("audio");
     let _ = std::fs::create_dir_all(&audio_dir);
     let model = state.settings.whisper_model_path.trim().to_string();
+    let kyutai_config = if state.settings.use_kyutai_stt {
+        Some(iced_yogurt_stt::MoshiServerConfig {
+            base_url: state.settings.kyutai_stt_server_url.clone(),
+            model: state.settings.kyutai_stt_model.clone(),
+            language: Some(state.settings.transcription_language.clone()),
+        })
+    } else {
+        None
+    };
     let session = match recording::start(
         recorder,
         meeting_id,
@@ -158,6 +167,10 @@ fn start_recording(state: &mut State) -> Task<Message> {
         &state.settings.transcription_language,
         audio_dir,
         state.settings.save_audio,
+        state.settings.use_kyutai_stt,
+        kyutai_config,
+        state.settings.kyutai_window_seconds,
+        state.settings.kyutai_overlap_seconds,
     ) {
         Ok(session) => session,
         Err(err) => {
