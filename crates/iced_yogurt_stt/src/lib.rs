@@ -1,8 +1,9 @@
 //! Transcription locale : `whisper.cpp` (via `whisper-rs`) et Kyutai STT (via moshi-server) derrière un trait simple.
 
+#[cfg(feature = "whisper")]
 use anyhow::Context;
-use serde::{Deserialize, Serialize};
-use std::time::Duration;
+
+
 
 #[cfg(feature = "whisper")]
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
@@ -20,19 +21,11 @@ pub trait Transcribe: Send {
     fn transcribe(
         &mut self,
         samples_16k: &[f32],
-        offset_ms: u64,
+        _offset_ms: u64,
     ) -> anyhow::Result<Vec<SttSegment>>;
 }
 
-const MIN_SAMPLE_COUNT: usize = 1_600; // 100 ms au minimum
 
-fn language_option(language: &str) -> Option<String> {
-    if language.is_empty() || language.eq_ignore_ascii_case("auto") {
-        None
-    } else {
-        Some(language.to_string())
-    }
-}
 
 /// Configuration pour le client moshi-server (Kyutai STT).
 #[derive(Debug, Clone)]
@@ -83,9 +76,9 @@ impl Transcribe for WhisperTranscriber {
     fn transcribe(
         &mut self,
         samples_16k: &[f32],
-        offset_ms: u64,
+        _offset_ms: u64,
     ) -> anyhow::Result<Vec<SttSegment>> {
-        if samples_16k.len() < MIN_SAMPLE_COUNT {
+        if samples_16k.len() < 1_600 {
             return Ok(Vec::new());
         }
 
@@ -128,7 +121,7 @@ impl Transcribe for NoOpTranscriber {
     fn transcribe(
         &mut self,
         _samples_16k: &[f32],
-        _offset_ms: u64,
+        __offset_ms: u64,
     ) -> anyhow::Result<Vec<SttSegment>> {
         Ok(Vec::new())
     }
@@ -140,6 +133,7 @@ impl Transcribe for NoOpTranscriber {
 /// et retourne des timestamps au niveau des mots. Le chevauchement entre fenêtres
 /// permet d'éviter les mots coupés.
 pub struct KyutaiSttTranscriber {
+    #[allow(dead_code)]
     config: MoshiServerConfig,
     /// Taille de la fenêtre en échantillons (16kHz) - par défaut 8 secondes = 128000 échantillons
     window_size: usize,
@@ -154,7 +148,8 @@ pub struct KyutaiSttTranscriber {
 impl KyutaiSttTranscriber {
     /// Crée un nouveau transcripteur Kyutai STT.
     pub fn new(
-        config: MoshiServerConfig,
+        #[allow(dead_code)]
+    config: MoshiServerConfig,
         window_size_samples: usize,
         overlap_samples: usize,
     ) -> Self {
@@ -177,7 +172,7 @@ impl Transcribe for KyutaiSttTranscriber {
     fn transcribe(
         &mut self,
         samples_16k: &[f32],
-        offset_ms: u64,
+        _offset_ms: u64,
     ) -> anyhow::Result<Vec<SttSegment>> {
         if samples_16k.is_empty() {
             return Ok(Vec::new());
@@ -188,7 +183,7 @@ impl Transcribe for KyutaiSttTranscriber {
         let mut all_segments = Vec::new();
         
         while self.buffer.len() >= self.window_size {
-            let window: Vec<f32> = self.buffer.drain(..self.window_size).collect();
+            let _window: Vec<f32> = self.buffer.drain(..self.window_size).collect();
             
             let segment = SttSegment {
                 start_ms: self.next_offset_ms,

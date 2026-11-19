@@ -15,6 +15,7 @@ use iced_yogurt_stt::{KyutaiSttTranscriber, MoshiServerConfig, Transcribe};
 use iced_yogurt_stt::WhisperTranscriber;
 
 /// Événements produits par la session vers l'interface.
+#[derive(Debug, Clone)]
 pub enum SessionEvent {
     /// Fenêtre transmise : fragments transcrits, relatifs au début du flux.
     Segments(Vec<iced_yogurt_stt::SttSegment>),
@@ -45,8 +46,8 @@ impl Session {
 pub fn start(
     mut recorder: iced_yogurt_audio::Recorder,
     meeting_id: i64,
-    model_path: Option<String>,
-    language: &str,
+    _model_path: Option<String>,
+    _language: &str,
     audio_dir: PathBuf,
     save_audio: bool,
     use_kyutai_stt: bool,
@@ -55,11 +56,11 @@ pub fn start(
     overlap_seconds: u64,
 ) -> anyhow::Result<Session> {
     let samples_rx = recorder.take_receiver();
-    let sample_rate = recorder.sample_rate;
+    let sample_rate = recorder.get_sample_rate();
     let (tx, rx) = mpsc::channel::<SessionEvent>();
     let stop = Arc::new(AtomicBool::new(false));
     let stop_loop = Arc::clone(&stop);
-    let language = language.to_string();
+    let language = _language.to_string();
 
     std::thread::Builder::new()
         .name("iced-yogurt-session".to_string())
@@ -69,7 +70,7 @@ pub fn start(
                 recorder,
                 sample_rate,
                 meeting_id,
-                model_path,
+                _model_path,
                 language,
                 audio_dir,
                 save_audio,
@@ -93,11 +94,11 @@ pub fn start(
 fn run(
     samples_rx: mpsc::Receiver<Vec<f32>>,
     // Garde le stream cpal vivant jusqu'à la fin de la session.
-    mut recorder: iced_yogurt_audio::Recorder,
+    recorder: iced_yogurt_audio::Recorder,
     sample_rate: u32,
     meeting_id: i64,
-    model_path: Option<String>,
-    language: String,
+    _model_path: Option<String>,
+    _language: String,
     audio_dir: PathBuf,
     save_audio: bool,
     use_kyutai_stt: bool,
@@ -132,12 +133,12 @@ fn run(
         // Utiliser Whisper (ancienne implémentation)
         #[cfg(feature = "whisper")]
         {
-            match &model_path {
+            match &_model_path {
                 Some(path) if std::path::Path::new(path).exists() => {
-                    let lang = if language.eq_ignore_ascii_case("auto") {
+                    let lang = if _language.eq_ignore_ascii_case("auto") {
                         None
                     } else {
-                        Some(language.clone())
+                        Some(_language.clone())
                     };
                     match WhisperTranscriber::load(path, lang) {
                         Ok(t) => transcriber = Some(Box::new(t)),

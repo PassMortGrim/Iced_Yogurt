@@ -8,6 +8,9 @@ license.workspace = true
 name = "iced-yogurt"
 path = "src/main.rs"
 
+[features]
+whisper = ["iced_yogurt_stt/whisper"]
+
 [dependencies]
 anyhow = "1"
 iced = { version = "0.13", features = ["tokio"] }

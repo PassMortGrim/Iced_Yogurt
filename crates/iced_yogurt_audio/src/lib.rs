@@ -73,6 +73,17 @@ impl Recorder {
     }
 
     /// Transfère le récepteur d'échantillons au fil des sessions ; appelé une fois.
+    pub fn get_sample_rate(&self) -> u32 {
+        #[cfg(feature = "real-audio")]
+        {
+            self.sample_rate
+        }
+        #[cfg(not(feature = "real-audio"))]
+        {
+            TARGET_SAMPLE_RATE
+        }
+    }
+
     pub fn take_receiver(&mut self) -> mpsc::Receiver<Vec<f32>> {
         #[cfg(feature = "real-audio")]
         {

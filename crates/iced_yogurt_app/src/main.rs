@@ -2,7 +2,7 @@
 
 mod recording;
 
-use iced::widget::{button, column, row, scrollable, text, text_input};
+use iced::widget::{button, column, container, row, scrollable, text, text_input};
 use iced::{Alignment, Element, Length, Subscription, Task};
 use iced_yogurt_core::{data_dir, unix_now, Meeting, Segment, Settings, Storage};
 use iced_yogurt_llm::{prompts, OpenAiClient};
@@ -66,6 +66,7 @@ impl State {
     }
 }
 
+#[derive(Debug, Clone)]
 enum Message {
     StartRecording,
     StopRecording,
@@ -73,7 +74,7 @@ enum Message {
     TitleChanged(String),
     MeetingSelected(i64),
     Summarize(i64),
-    SummaryDone(i64, anyhow::Result<String>),
+    SummaryDone(i64, Result<String, String>),
     Export(i64),
 }
 
@@ -251,12 +252,11 @@ fn summarize(state: &mut State, id: i64) -> Task<Message> {
     };
     let notes = state.storage.get_meeting(id).ok().and_then(|m| m.notes);
     state.status = format!("Résumé en cours avec {}…", client.model());
+    let system = prompts::summary_system().to_string();
+    let user = prompts::summary_user(&transcript, notes.as_deref());
     Task::perform(
-        client.chat(
-            prompts::summary_system(),
-            &prompts::summary_user(&transcript, notes.as_deref()),
-        ),
-        move |result| Message::SummaryDone(id, result),
+        async move { client.clone().chat(&system, &user).await },
+        move |result| Message::SummaryDone(id, result.map_err(|e| e.to_string())),
     )
 }
 
@@ -299,7 +299,7 @@ fn subscription(state: &State) -> Subscription<Message> {
     let events = session.events.clone();
     Subscription::run_with_id(
         ("iced-yogurt-session", session.meeting_id),
-        iced::stream::channel(move |mut output| async move {
+        iced::stream::channel(100, move |mut sender| async move {
             loop {
                 let event = {
                     let Ok(events) = events.lock() else { break };
@@ -307,7 +307,7 @@ fn subscription(state: &State) -> Subscription<Message> {
                 };
                 match event {
                     Ok(received) => {
-                        if output.send(Message::SessionEvent(received)).await.is_err() {
+                        if sender.try_send(Message::SessionEvent(received)).is_err() {
                             break;
                         }
                     }
@@ -321,7 +321,7 @@ fn subscription(state: &State) -> Subscription<Message> {
     )
 }
 
-fn view(state: &State) -> Element<Message> {
+fn view(state: &State) -> Element<'_, Message> {
     let mut root = column![].spacing(12).padding(20).max_width(720);
 
     if state.recording.is_some() {
