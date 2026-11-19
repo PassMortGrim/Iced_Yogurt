@@ -16,41 +16,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Linux dependencies
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            cmake \
-            clang \
-            libclang-dev \
-            libclang1 \
-            libasound2-dev \
-            libudev-dev \
-            pkg-config \
-            llvm \
-            g++ \
-            libsqlite3-dev
+          sudo apt-get install -y cmake clang libclang-dev pkg-config g++
           echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig" >> $GITHUB_ENV
-          echo "/usr/bin" >> $GITHUB_PATH
       
-      # macOS dependencies
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install cmake pkg-config llvm sqlite3
+          brew install cmake llvm
           echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$(brew --prefix)/opt/libpng/lib/pkgconfig:$(brew --prefix)/opt/sqlite/lib/pkgconfig" >> $GITHUB_ENV
       
-      # Windows dependencies
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
         run: |
           choco install cmake --yes
           choco install llvm --yes
-          choco install sqlite --yes
           echo "LIBCLANG_PATH=C:\Program Files\LLVM\lib" >> $GITHUB_ENV
       
       - uses: dtolnay/rust-toolchain@stable
