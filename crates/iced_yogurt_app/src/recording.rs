@@ -10,7 +10,9 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
 use iced_yogurt_audio::{write_wav, Resampler, TARGET_SAMPLE_RATE};
-use iced_yogurt_stt::{KyutaiSttTranscriber, MoshiServerConfig, Transcribe, WhisperTranscriber};
+use iced_yogurt_stt::{KyutaiSttTranscriber, MoshiServerConfig, Transcribe};
+#[cfg(feature = "whisper")]
+use iced_yogurt_stt::WhisperTranscriber;
 
 /// Événements produits par la session vers l'interface.
 pub enum SessionEvent {
@@ -128,30 +130,39 @@ fn run(
         }
     } else {
         // Utiliser Whisper (ancienne implémentation)
-        match &model_path {
-            Some(path) if std::path::Path::new(path).exists() => {
-                let lang = if language.eq_ignore_ascii_case("auto") {
-                    None
-                } else {
-                    Some(language.clone())
-                };
-                match WhisperTranscriber::load(path, lang) {
-                    Ok(t) => transcriber = Some(Box::new(t)),
-                    Err(err) => {
-                        let _ = tx.send(SessionEvent::Warned(format!("Whisper indisponible : {err}")));
+        #[cfg(feature = "whisper")]
+        {
+            match &model_path {
+                Some(path) if std::path::Path::new(path).exists() => {
+                    let lang = if language.eq_ignore_ascii_case("auto") {
+                        None
+                    } else {
+                        Some(language.clone())
+                    };
+                    match WhisperTranscriber::load(path, lang) {
+                        Ok(t) => transcriber = Some(Box::new(t)),
+                        Err(err) => {
+                            let _ = tx.send(SessionEvent::Warned(format!("Whisper indisponible : {err}")));
+                        }
                     }
                 }
+                Some(path) => {
+                    let _ = tx.send(SessionEvent::Warned(format!(
+                        "modèle Whisper introuvable : {path} (transcription désactivée)"
+                    )));
+                }
+                None => {
+                    let _ = tx.send(SessionEvent::Warned(
+                        "aucun modèle Whisper configuré (transcription désactivée)".to_string(),
+                    ));
+                }
             }
-            Some(path) => {
-                let _ = tx.send(SessionEvent::Warned(format!(
-                    "modèle Whisper introuvable : {path} (transcription désactivée)"
-                )));
-            }
-            None => {
-                let _ = tx.send(SessionEvent::Warned(
-                    "aucun modèle Whisper configuré (transcription désactivée)".to_string(),
-                ));
-            }
+        }
+        #[cfg(not(feature = "whisper"))]
+        {
+            let _ = tx.send(SessionEvent::Warned(
+                "Whisper non disponible (compilé sans la feature 'whisper'). Utilisez Kyutai STT.".to_string(),
+            ));
         }
     }
 

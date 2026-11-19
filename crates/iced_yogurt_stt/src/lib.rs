@@ -3,6 +3,8 @@
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+
+#[cfg(feature = "whisper")]
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
 /// Un fragment transcrit, en millisecondes relatives au début du flux.
@@ -52,12 +54,16 @@ impl Default for MoshiServerConfig {
 
 /// Transcripteur Whisper local (whisper.cpp). Le modèle est chargé une fois,
 /// la transcription fenêtrée est faite à la volée.
+/// 
+/// Disponible uniquement avec la feature `whisper`.
+#[cfg(feature = "whisper")]
 pub struct WhisperTranscriber {
     model: WhisperContext,
     language: Option<String>,
     translate: bool,
 }
 
+#[cfg(feature = "whisper")]
 impl WhisperTranscriber {
     /// `language` : `None` pour la détection automatique.
     pub fn load(model_path: &str, language: Option<String>) -> anyhow::Result<Self> {
@@ -72,6 +78,7 @@ impl WhisperTranscriber {
     }
 }
 
+#[cfg(feature = "whisper")]
 impl Transcribe for WhisperTranscriber {
     fn transcribe(
         &mut self,
